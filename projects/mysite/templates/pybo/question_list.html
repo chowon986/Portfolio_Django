@@ -1,0 +1,18 @@
+<!-- {% %} 는 탬플릿 태그 -->
+<!-- question_list가 있다면 -->
+{% if question_list %}
+    <ul>
+        <!-- question_list를 순회하며 순차적으로 하나씩 question에 대입 -->
+        {% for question in question_list %}
+        <!-- {{ question.id }} : for문에 의해 대입된 question 객체의 id 번호를 출력 -->
+        <!-- {{question.subject}} : for문에 의해 대입된 question 객체의 제목을 출력 -->
+        <li><a href="/pybo/{{ question.id }}">{{question.subject}}</a></li>
+        <!-- for문 끝 -->
+        {% endfor%}
+    </ul>
+<!-- question_list가 없다면 -->
+{% else %}
+    <p>질문이 없습니다.</p>
+<!-- if문 끝 -->
+{% endif %}
+
