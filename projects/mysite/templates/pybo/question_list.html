@@ -29,6 +29,9 @@
                     <td>
                         <!-- 질문의 제목에 detail/question_id URL 걸음 -->
                         <a href="{% url 'pybo:detail' question.id %}">{{ question.subject }}</a>
+                        {% if question.answer_set.count > 0 %}
+                        <span class="text-danger small mx-2">{{ question.answer_set.count }}</span>
+                        {% endif %}
                     </td>
                     <!-- 작성일시 출력 -->
                     <td>{{ question.create_date }}</td>
