@@ -1,10 +1,11 @@
 # from django.http import HttpResponse # HttpResponse 클래스를 사용하기 위한 모듈 가져옴
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from django.http import HttpResponseNotAllowed
+# from django.http import HttpResponseNotAllowed
 from .models import Question, Answer
 from .forms import QuestionForm, AnswerForm
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -43,6 +44,7 @@ def detail(request, question_id):
 
 # answer_create 함수 호출 시 URL 매핑시 저장된 question_id가 전달됨
 # 답변을 등록하고 상세 페이지로 이동하는 함수
+@login_required(login_url='common:login')
 def answer_create(request, question_id):
     # 매개 변수로 받은 question_id와 pk값이 일치하는 Question 모델의 객체를 데이터베이스에서 가져옴
     # 해당하는 question이 없을 경우 404 에러 반환
@@ -60,15 +62,17 @@ def answer_create(request, question_id):
         form = AnswerForm(request.POST)
         if form.is_valid():
             answer = form.save(commit=False)
+            answer.author = request.user # author 속성에 로그인 계정 저장
             answer.create_date = timezone.now()
             answer.question = question
             answer.save()
             return redirect('pybo:detail', question_id=question.id)
-    else: # GET 방식으로 요청하는 경우에는 HttpResponseNotAllowed 오류 발생
-        return HttpResponseNotAllowed('Only POST is possible')
+    else: # GET 방식으로 요청하는 경우에는 HttpResponseNotAllowed 오류 발생 -> 로그인 화면으로 이동 -> 로그인 시 상세화면으로 이동
+        form = AnswerForm()
     context = {'question':question, 'form':form}
     return render(request, 'pybo/question_detail.html', context)
 
+@login_required(login_url='common:login')
 def question_create(request):
     # 요청 방식이 POST 인 경우
     if request.method == 'POST':
@@ -80,6 +84,7 @@ def question_create(request):
             # 폼으로부터 데이터를 가져와 Question 모델의 인스턴스 생성
             # commit=False를 통해 일시적으로 데이터베이스에 저장하지 않고 모델 인스턴스를 가져옴
             question = form.save(commit=False) # commit=False를 하지 않으면 create_date 값이 없다는 오류가 발생할 것임
+            question.author = request.user # author 속성에 로그인 계정 저장
             # question의 create_date 필드에 현재 시간 설정
             question.create_date = timezone.now()
             # 변경된 데이터를 데이터베이스에 저장

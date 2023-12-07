@@ -9,9 +9,10 @@
     <!-- 테이블 클래스를 이용하여 테이블 생성 -->
     <table class="table">
         <thead>
-            <tr class="table-dark">
+            <tr class="text-center table-dark">
                 <th>번호</th>
-                <th>제목</th>
+                <th style="width:50%">제목</th>
+                <th>글쓴이</th>
                 <th>작성일시</th>
             </tr>
         </thead>
@@ -20,13 +21,13 @@
             {% if question_list %}
                 <!-- question_list의 질문을 question으로 가져와서 -->
                 {% for question in question_list %}
-                <tr>
+                <tr class="text-center">
                     <!-- 질문의 번호 출력 -->
                     <td>
                         <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
                         {{ question_list.paginator.count|sub:question_list.start_index|sub:forloop.counter0|add:1 }}
                     </td>
-                    <td>
+                    <td class="text-start">
                         <!-- 질문의 제목에 detail/question_id URL 걸음 -->
                         <a href="{% url 'pybo:detail' question.id %}">{{ question.subject }}</a>
                         {% if question.answer_set.count > 0 %}
@@ -34,6 +35,7 @@
                         {% endif %}
                     </td>
                     <!-- 작성일시 출력 -->
+                    <td>{{ question.author.username }}</td>
                     <td>{{ question.create_date }}</td>
                 </tr>
                 {% endfor %}
@@ -41,7 +43,7 @@
             {% else %}
                 <tr>
                     <!-- 질문이 없습니다 출력 -->
-                    <td colspan="3">질문이 없습니다.</td>
+                    <td colspan="4">질문이 없습니다.</td>
                 </tr>
             {% endif %}
         </tbody>
