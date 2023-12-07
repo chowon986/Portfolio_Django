@@ -7,5 +7,7 @@ app_name = 'pybo'
 urlpatterns = [
     path('', views.index, name='index'), # pybo라는 경로로 요청이 들어오면 views.py index 함수 호출 
     path('<int:question_id>/', views.detail, name='detail'), # pybo/숫자 경로로 요청이 들어오면 views.py에서 detail 함수 호출
+    #pybo/create/숫자 경로로 요청이 들어오면 views.py에서 answer_create 함수 호출, 별칭은 answer_create
+    path('answer/create/<int:question_id>/', views.answer_create, name='answer_create') 
 ]
 

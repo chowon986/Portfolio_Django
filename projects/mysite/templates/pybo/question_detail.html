@@ -1,7 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- 탬플릿에 스타일시트와 같은 스태틱 파일을 사용하기 위해 load static 태그 삽입 -->
+{% comment %} {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}"> {% endcomment %}
+<!-- 컨테이너 생성, 여백 my-3 부여 -->
+<div class="container my-3">
+    <!-- 질문의 제목 표시 -->
+    <h2 class="border-bottom py-2">{{question.subject}}</h2>
+    <!-- 카드 스타일 적용하여 질문을 나타내는 카드 생성 -->
+    <div class="card my-3">
+        <!-- 카드의 내용과 작성일을 포함 -->
+        <div class="card-body">
+            <div class="card-text" style="white-space: pre-line;">{{ question.content }}</div>
+            <div class="d-flex justify-content-end">
+                <div class="badge bg-light text-dark p-2">
+                    {{ question.create_date }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 답변 -->
+    <!-- 질문에 대한 답변 개수를 표시 -->
+    <h5 class="border-bottom my-3 py-2">{{ question.answer_set.count }}개의 답변이 있습니다.</h5>
+    <!-- 현재 질문에 대한 모든 답변을 표시 -->
+    {% for answer in question.answer_set.all %}
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text" style="white-space: pre-line;">{{ answer.content }}</div>
+            <div class="d-flex justify-content-end">
+                <div class="badge bg-light text-dark p-2">
+                    {{ answer.create_date }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <!-- 답변 등록 -->
+    <!-- 답변 생성을 위한 폼 생성  -->
+    <form action="{% url 'pybo:answer_create' question.id %}" method="post" class="my-3">
+        {% csrf_token %}
+        <div class="mb-3">
+            <lable for="content" class="form-label">답변내용</lable>
+            <textarea name="content" id="content" class="form-control" rows="10"></textarea>
+        </div>
+        <input type="submit" value="답변등록" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
+
+{% comment %} <!-- HTML의 link 태그를 사용하여 스타일시트를 불러옴 -->
+<!-- href에 해당 css 경로가 들어감 -> 해당 static 파일을 가져와서 현재 탬플릿에 적용 -->
+<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 <!-- 질문의 제목을 <h1 태그로 출력 -->
 <h1>{{question.subject}}</h1>
 <div>
     <!-- 질문의 내용을 출력 -->
     {{question.content}}
 </div>
-
+<h5>{{question.answer_set.count}}개의 답변이 있습니다.</h5>
+<div>
+    <!-- 순서 없는 목록 생성 -->
+    <ul>
+        <!-- 현재 질문에 연결된 모든 답변(question.answer_set.all)들을 가져옴 -->
+        {% for answer in question.answer_set.all %}
+            <li>{{answer.content}}</li>
+        {% endfor %}
+    </ul>
+</div>
+<!-- 답변을 작성할 수 있는 form 생성 -->
+<!-- action 속성은 폼 데이터를 전송할 URL 지정 -->
+<!-- URL 패턴을 사용하여 답변 작성 기능이 있는 URL을 생성 -->
+<form action="{% url 'pybo:answer_create' question.id %}" method="post">
+    <!-- CSRF(Cross-Site Request Forgery) 토큰을 폼 안에 포함시켜 보안을 강화함 -->
+    {% csrf_token %}
+    <!-- 답변의 내용을 입력할 수 있는 텍스트창 추가-->
+    <textarea name="content" id="content" rows="15"></textarea>
+    <!-- 답변 등록 버튼 추가 -->
+    <input type="submit" value="답변등록"> 
+</form>
+ {% endcomment %}

@@ -1,0 +1,13 @@
+/* 모든 textarea 요소에 너비를 100%로 설정 */
+/* 화면의 가로폭에 맞춰 textarea의 너비를 확장시켜 전체 폭을 차지하도록 함 */
+/* textarea {
+    width:100%;
+} */
+
+/* 타입이 submit인 input 요소에 대한 스타일을 지정 */
+/* input[type=submit] {
+    해당 버튼의 위쪽 여백을 설정
+    margin-top:10px;
+} */
+
+
