@@ -6,6 +6,15 @@
 <!-- 컨테이너 생성, 여백 my-3 부여 -->
 <div class="container my-3">
     <!-- 질문의 제목 표시 -->
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+    {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul><li>{{ message.message }}</li></ul>
+    {% endfor %}
+    </div>
+    {% endif %}
     <h2 class="border-bottom py-2">{{question.subject}}</h2>
     <!-- 카드 스타일 적용하여 질문을 나타내는 카드 생성 -->
     <div class="card my-3">
@@ -13,10 +22,25 @@
         <div class="card-body">
             <div class="card-text" style="white-space: pre-line;">{{ question.content }}</div>
             <div class="d-flex justify-content-end">
+                {% if question.modify_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ question.modify_date }}</div>
+                </div>
+                {% endif %}
                 <div class="badge bg-light text-dark p-2 text-strat">
                     <div class="mb-2">{{ question.author.username }}</div>
                     <div>{{ question.create_date }}</div>
                 </div>
+            </div>
+            <div class="my-3">
+                {% if request.user == question.author %}
+                <a href="{% url 'pybo:question_modify' question.id %}"
+                    class="btn btn-sm btn-outline-secondary">수정</a>
+                <!-- 삭제 버튼을 클릭했을 때 해당 질문을 삭제하기 위한 요청을 보내도록 구성 -->
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary"
+                    data-uri="{% url 'pybo:question_delete' question.id  %}">삭제</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -29,10 +53,25 @@
         <div class="card-body">
             <div class="card-text" style="white-space: pre-line;">{{ answer.content }}</div>
             <div class="d-flex justify-content-end">
+                {% if answer.modify_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ answer.modify_date }}</div>
+                </div>
+                {% endif %}
                 <div class="badge bg-light text-dark p-2 text-start">
                     <div class="mb-2">{{ answer.author.username }}</div>
                     <div>{{ answer.create_date }}</div>
                 </div>
+            </div>
+            <div class="my-3">
+                {% if request.user == answer.author %}
+                <a href="{% url 'pybo:answer_modify' answer.id  %}" 
+                   class="btn btn-sm btn-outline-secondary">수정</a>   
+                <!-- 삭제 버튼을 누르면 답변 삭제 URL 생성 -->
+                <a href="#" class="delete btn btn-sm btn-outline-secondary "
+                data-uri="{% url 'pybo:answer_delete' answer.id  %}">삭제</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -62,6 +101,23 @@
         <input type="submit" value="답변등록" class="btn btn-primary">
     </form>
 </div>
+{% endblock %}
+{% block script %}
+<script type='text/javascript'>
+// delete 클래스를 가진 모든 요소를 가져와서 delete_elements 변수에 저장
+const delete_elements = document.getElementsByClassName("delete");
+Array.from(delete_elements).forEach(function(element) {
+    // 삭제 버튼이 클릭되었을 때 실행될 동작을 정의
+    element.addEventListener('click', function() {
+        // 사용자가 확인을 누른 경우
+        if(confirm("정말로 삭제하시겠습니까?")) {
+            // data.uri 속성에 저장된 URL로 이동함
+            // 삭제 버튼의 data.uri 속성에 저장된 URL을 가져와서 현재창을 그 URL로 이동시킴
+            location.href = this.dataset.uri;
+        };
+    });
+});
+</script>
 {% endblock %}
 
 {% comment %} <!-- HTML의 link 태그를 사용하여 스타일시트를 불러옴 -->

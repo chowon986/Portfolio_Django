@@ -6,6 +6,7 @@ from .models import Question, Answer
 from .forms import QuestionForm, AnswerForm
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 # Create your views here.
 
@@ -103,5 +104,100 @@ def question_create(request):
     # form = QuestionForm()
     # 빈 객체를 pybo/question_form.html에 전달
     # return render(request, 'pybo/question_form.html', {'form' : form})
+
+# 로그인이 되어 있지 않은 경우 사용자를 로그인 페이지로 리디렉션
+@login_required(login_url='common:login')
+def question_modify(request, question_id):
+    # pk가 question_id인 객체를 가져옴
+    # 만약 존재하지 않으면 404 에러 메시지 표출
+    question = get_object_or_404(Question, pk=question_id)
+    # 현재 로그인한 사용자가 질문의 저자가 아닌 경우, 오류 메시지를 표시하고 질문 상세 페이지로 리디렉션
+    if request.user != question.author:
+        messages.error(request, '수정권한이 없습니다')
+        return redirect('pybo:detail', question_id=question.id)
+    # POST 방식의 요청이라면
+    if request.method == "POST":
+        # 받은 데이터를 사용하여 질문을 수정하기 위한 폼 생성 (수정할 질문 객체 instance를 함께 전달함)
+        form = QuestionForm(request.POST, instance=question)
+        # 폼 데이터의 유효성 확인
+        if form.is_valid():
+            # 수정된 데이터 임시 저장
+            question = form.save(commit=False)
+            # 수정일시 저장
+            question.modify_date = timezone.now()
+            # 수정된 질문 저장
+            question.save()
+            # 수정된 질문 상세 페이지로 리디렉션 
+            return redirect('pybo:detail', question_id=question.id)
+    # 만약 GET 방식이라면
+    else:
+        # 수정을 위한 폼 생성
+        # 수정할 질문 객체를 폼에 넘겨줌
+        form = QuestionForm(instance=question)
+    # 폼을 컨택스트에 담아 템플릿으로 전달
+    context = {'form': form}
+    # 수정을 위한 폼을 가진 템플릿을 랜더링하여 사용자에게 보여줌
+    return render(request, 'pybo/question_form.html', context)
+
+# 로그인이 필요함
+@login_required(login_url='common:login')
+def question_delete(request, question_id):
+    # pk가 question_id와 일치하는 게 있으면 question 객체로 받아오고, 아니면 404 에러 표출
+    question = get_object_or_404(Question, pk=question_id)
+    # 현재 로그인한 사용자가 질문의 저자가 아닌 경우 오류 메시지 표시
+    if request.user != question.author:
+        messages.error(request, '삭제권한이 없습니다')
+        # 질문 상세 페이지로 리디렉션
+        return redirect('pybo:detail', question_id=question.id)
+    # 질문 삭제 
+    question.delete()
+    # 삭제가 완료되면 pybo:index로 리디렉션하여 메인 페이지로 이동
+    return redirect('pybo:index')
+
+# 로그인이 필요함
+@login_required(login_url='common:login')
+def answer_modify(request, answer_id):
+    # pk가 question_id와 일치하는 게 있으면 question 객체로 받아오고, 아니면 404 에러 표출
+    answer = get_object_or_404(Answer, pk=answer_id)
+    # 현재 로그인한 사용자가 질문의 저자가 아닌 경우 오류 메시지 표시
+    if request.user != answer.author:
+        messages.error(request, '수정권한이 없습니다')
+        # 질문 상세 페이지로 리디렉션
+        return redirect('pybo:detail', question_id=answer.question.id)
+    # 요청 방식이 POST면
+    if request.method == "POST":
+        form = AnswerForm(request.POST, instance=answer)
+        # 유효하면
+        if form.is_valid():
+            # 수정된 데이터 임시 저장
+            answer = form.save(commit=False)
+            # 수정일시 저장
+            answer.modify_date = timezone.now()
+            # 저장
+            answer.save()
+            # 상세 페이지로 리디렉션
+            return redirect('pybo:detail', question_id=answer.question.id)
+    # 요청 방식이 GET이면
+    else:
+        # 수정하는데 사용될 답변 폼 초기화
+        form = AnswerForm(instance=answer)
+        # 답변 객체와 수정하는 데 사용되는 폼을 context에 담아 템플릿으로 전달
+    context = {'answer': answer, 'form': form}
+    # 템플릿을 랜더링하여 수정할 답변과 해당하는 폼을 보여줌
+    return render(request, 'pybo/answer_form.html', context)
+
+# 로그인이 필요함
+@login_required(login_url='common:login')
+def answer_delete(request, answer_id):
+    # pk가 question_id와 일치하는 게 있으면 question 객체로 받아오고, 아니면 404 에러 표출
+    answer = get_object_or_404(Answer, pk=answer_id)
+    # 현재 로그인한 사용자가 질문의 저자가 아닌 경우 오류 메시지 표시
+    if request.user != answer.author:
+        messages.error(request, '삭제권한이 없습니다')
+    # 일치하면 답변 삭제
+    else:
+        answer.delete()
+    # 삭제가 완료되면 pybo:detail로 리디렉션하여 메인 페이지로 이동
+    return redirect('pybo:detail', question_id=answer.question.id)
 
 
