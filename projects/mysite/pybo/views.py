@@ -56,7 +56,7 @@ def answer_create(request, question_id):
             answer.question = question
             answer.save()
             return redirect('pybo:detail', question_id=question.id)
-    else:
+    else: # GET 방식으로 요청하는 경우에는 HttpResponseNotAllowed 오류 발생
         return HttpResponseNotAllowed('Only POST is possible')
     context = {'question':question, 'form':form}
     return render(request, 'pybo/question_detail.html', context)
