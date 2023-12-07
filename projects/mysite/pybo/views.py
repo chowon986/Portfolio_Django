@@ -4,19 +4,27 @@ from django.utils import timezone
 from django.http import HttpResponseNotAllowed
 from .models import Question, Answer
 from .forms import QuestionForm, AnswerForm
+from django.core.paginator import Paginator
 
 # Create your views here.
 
 # HttpResponse 클래스를 사용하여 문자열을 담은 HTTP 응답을 생성하고 반환
 # 해당 응답은 클라이언트에게 전송되어 표시됨
 def index(request):
+    page = request.GET.get('page', '1')
     # return HttpResponse("안녕하세요 pybo에 오신것을 환영합니다.") 
+
     # order_by는 조회 결과를 정렬하는 함수
     # 작성일자 앞에 '-'를 붙여 작성일시를 기준으로 내림차순 정렬함 (최신순이 위로 가도록)
     question_list = Question.objects.order_by('-create_date')
+    # 페이지당 10개씩 보여주기
+    paginator = Paginator(question_list, 10)
+    # 요청된 페이지 객체 가져오기
+    page_obj = paginator.get_page(page)
+    context = {'question_list':page_obj}
     
     # question_list에 정렬된 질문 목록을 context 변수에 저장함
-    context = {'question_list' : question_list}
+    # context = {'question_list' : question_list}
     
     #  question_list 데이터를 pybo/question_list.html 파일에 적용하여 HTML을 생성한 후 리턴
     # 'pybo/question_list.html'는 템플릿임 (파이썬 데이터를 읽어서 사용할 수 있음)
