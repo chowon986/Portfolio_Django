@@ -1,23 +1,30 @@
 from django.urls import path 
 
-from . import views # 현재 디렉토리에서 views.py 파일 가져옴
+from .views import base_views, question_views, answer_views
 
 app_name = 'pybo'
 
 urlpatterns = [
-    path('', views.index, name='index'), # pybo라는 경로로 요청이 들어오면 views.py index 함수 호출 
-    path('<int:question_id>/', views.detail, name='detail'), # pybo/숫자 경로로 요청이 들어오면 views.py에서 detail 함수 호출
-    #pybo/create/숫자 경로로 요청이 들어오면 views.py에서 answer_create 함수 호출, 별칭은 answer_create
-    path('answer/create/<int:question_id>/', views.answer_create, name='answer_create'), 
+    # base_views.py
+    path('',
+         base_views.index, name='index'),
+    path('<int:question_id>/',
+         base_views.detail, name='detail'),
 
-    # pybo/question/create/ 라는 경로로 요청이 들어오면 views.py에서 question_create 함수 호출 
-    path('question/create/', views.question_create, name='question_create'),
-    path('question/modify/<int:question_id>/', views.question_modify, name='question_modify'),
-    # pybo/question/delete/숫자/ 라는 경로로 요청이 들어오면 views.py에서 question_delete 함수 호출
-    path('question/delete/<int:question_id>/', views.question_delete, name='question_delete'),
-    # pybo/answer/modify/숫자/ 라는 경로로 요청이 들어오면 views.py에서 answer_modify 함수 호출
-    path('answer/modify/<int:answer_id>/', views.answer_modify, name='answer_modify'),
-    # pybo/answer/delete/숫자/ 라는 경로로 요청이 들어오면 views.py에서 answer_delete 함수 호출
-    path('answer/delete/<int:answer_id>/', views.answer_delete, name='answer_delete'),
+    # question_views.py
+    path('question/create/',
+         question_views.question_create, name='question_create'),
+    path('question/modify/<int:question_id>/',
+         question_views.question_modify, name='question_modify'),
+    path('question/delete/<int:question_id>/',
+         question_views.question_delete, name='question_delete'),
+
+    # answer_views.py
+    path('answer/create/<int:question_id>/',
+         answer_views.answer_create, name='answer_create'),
+    path('answer/modify/<int:answer_id>/',
+         answer_views.answer_modify, name='answer_modify'),
+    path('answer/delete/<int:answer_id>/',
+         answer_views.answer_delete, name='answer_delete'),
 ]
 
