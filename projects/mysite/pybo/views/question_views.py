@@ -87,3 +87,13 @@ def question_delete(request, question_id):
     question.delete()
     # 삭제가 완료되면 pybo:index로 리디렉션하여 메인 페이지로 이동
     return redirect('pybo:index')
+
+@login_required(login_url='common:login')
+def question_vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    if request.user == question.author:
+        messages.error(request, '본인이 작성한 글은 추천할수 없습니다')
+    else:
+        question.voter.add(request.user)
+    return redirect('pybo:detail', question_id=question.id)
+
