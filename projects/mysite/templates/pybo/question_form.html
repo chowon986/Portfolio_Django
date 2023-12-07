@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">질문등록</h5>
+    <form method="post"> 
+        {% csrf_token %}
+        <!-- 오류표시 Start -->
+        <!-- form 데이터가 유효하지 않은 경우-->
+        {% if form.errors %} 
+        <!-- 에러 표시 -->
+        <div class="alert alert-danger" role="alert">
+            <!-- 각 field에 대한 오류를 표시 -->
+            {% for field in form %}
+            {% if field.errors %}
+            <div>
+                <strong>{{ field.label }}</strong>
+                {{ field.errors }}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- 오류표시 End -->
+        <!-- form 데이터가 있는 경우 해당 데이터를 form 필드에 미리 채움-->
+        <div class="mb-3">
+            <!-- 제목을 나타내는 레이블 정의 -->
+            <label for="subject" class="form-label">제목</label>
+            <!-- 제목을 입력받는 input 요소 생성 -->
+            <input type="text" class="form-control" name="subject" id="subject"
+                   value="{{ form.subject.value|default_if_none:'' }}"> <!-- 값이 None일 경우 빈 문자열을 출력 -->
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">내용</label>
+            <textarea class="form-control" name="content"
+                      id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <!--{{ form.as_p }} --> <!-- form 객체를 통해 생성된 HTML 폼을 삽입 (subject와 content 필드가 있는 폼) -->
+        <!-- '저장하기'가 표시된 버튼 생성 -> 이 버튼을 누르면 폼 데이터가 서버로 전송됨 -->
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+
+

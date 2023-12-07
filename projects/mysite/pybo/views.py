@@ -1,7 +1,9 @@
 # from django.http import HttpResponse # HttpResponse 클래스를 사용하기 위한 모듈 가져옴
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.http import HttpResponseNotAllowed
 from .models import Question, Answer
+from .forms import QuestionForm, AnswerForm
 
 # Create your views here.
 
@@ -44,9 +46,49 @@ def answer_create(request, question_id):
     # question.id를 함께 전달하여 해당 질문 상세 페이지로 이동
 
     # (방법 2) Answer 모델에 필요한 정보들을 전달하여 새로운 답변을 생성하고 데이터 베이스에 저장
-    answer = Answer(question=question, content=request.POST.get('content'), create_date=timezone.now())
-    answer.save()
-    return redirect('pybo:detail', question_id=question.id)
+    # answer = Answer(question=question, content=request.POST.get('content'), create_date=timezone.now())
+    # answer.save()
+    if request.method == "POST":
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = form.save(commit=False)
+            answer.create_date = timezone.now()
+            answer.question = question
+            answer.save()
+            return redirect('pybo:detail', question_id=question.id)
+    else:
+        return HttpResponseNotAllowed('Only POST is possible')
+    context = {'question':question, 'form':form}
+    return render(request, 'pybo/question_detail.html', context)
 
+def question_create(request):
+    # 요청 방식이 POST 인 경우
+    if request.method == 'POST':
+        # POST 요청으로 받은 데이터를 사용하여 QuestionForm 초기화
+        form = QuestionForm(request.POST)
+        # 폼 데이의 유효성 체크
+        # 만약 유효하지 않으면 다시 질문 등록 화면을 랜더링
+        if form.is_valid():
+            # 폼으로부터 데이터를 가져와 Question 모델의 인스턴스 생성
+            # commit=False를 통해 일시적으로 데이터베이스에 저장하지 않고 모델 인스턴스를 가져옴
+            question = form.save(commit=False) # commit=False를 하지 않으면 create_date 값이 없다는 오류가 발생할 것임
+            # question의 create_date 필드에 현재 시간 설정
+            question.create_date = timezone.now()
+            # 변경된 데이터를 데이터베이스에 저장
+            question.save()
+            # pybo:index로 이동
+            return redirect('pybo:index')
+    # 요청 방식이 GET인 경우
+    else:
+        form = QuestionForm()
+    # context에 폼 객체를 담음({'form' : form})
+    context = {'form' : form}
+    # pybo/question_form.html 템플릿을 랜더링하여 사용자에게 빈 폼을 보여줌
+    return render(request, 'pybo/question_form.html', context)
+
+    # 빈 폼 객체를 생성
+    # form = QuestionForm()
+    # 빈 객체를 pybo/question_form.html에 전달
+    # return render(request, 'pybo/question_form.html', {'form' : form})
 
 

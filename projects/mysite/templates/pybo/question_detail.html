@@ -39,6 +39,19 @@
     <!-- 답변 생성을 위한 폼 생성  -->
     <form action="{% url 'pybo:answer_create' question.id %}" method="post" class="my-3">
         {% csrf_token %}
+        <!-- 오류 표시 -->
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for field in form %}
+            {% if field.errors %}
+            <div>
+                <string>{{ field.label }}</string>
+                {{ field.errors }}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="mb-3">
             <lable for="content" class="form-label">답변내용</lable>
             <textarea name="content" id="content" class="form-control" rows="10"></textarea>
