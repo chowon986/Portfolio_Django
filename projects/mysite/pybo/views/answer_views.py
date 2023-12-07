@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
 from ..forms import AnswerForm
@@ -31,7 +31,9 @@ def answer_create(request, question_id):
             answer.create_date = timezone.now()
             answer.question = question
             answer.save()
-            return redirect('pybo:detail', question_id=question.id)
+            # resolve_url : 실제 호출되는 URL 문자열을 리턴하는 장고 함수
+            # pybo앱의 detail 뷰로 이동하고, 해당 질문(question_id) 과 관련된 답변(answer.id)를 포함하는 URL로 리디렉션
+            return redirect('{}#answer_{}'.format(resolve_url('pybo:detail', question_id=question.id), answer.id))
     else: # GET 방식으로 요청하는 경우에는 HttpResponseNotAllowed 오류 발생 -> 로그인 화면으로 이동 -> 로그인 시 상세화면으로 이동
         form = AnswerForm()
     context = {'question':question, 'form':form}
@@ -46,7 +48,7 @@ def answer_modify(request, answer_id):
     if request.user != answer.author:
         messages.error(request, '수정권한이 없습니다')
         # 질문 상세 페이지로 리디렉션
-        return redirect('pybo:detail', question_id=answer.question.id)
+        return redirect('{}#answer_{}'.format(resolve_url('pybo:detail', question_id=question.id), answer.id))
     # 요청 방식이 POST면
     if request.method == "POST":
         form = AnswerForm(request.POST, instance=answer)
@@ -90,6 +92,6 @@ def answer_vote(request, answer_id):
         messages.error(request, '본인이 작성한 글은 추천할수 없습니다')
     else:
         answer.voter.add(request.user)
-    return redirect('pybo:detail', question_id=answer.question.id)
+    return redirect('{}#answer_{}'.format(resolve_url('pybo:detail', question_id=question.id), answer.id))
 
 
