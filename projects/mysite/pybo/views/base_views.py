@@ -1,6 +1,7 @@
 # 기본 관리
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
 
 from ..models import Question
 
@@ -9,15 +10,23 @@ from ..models import Question
 def index(request):
     page = request.GET.get('page', '1')
     # return HttpResponse("안녕하세요 pybo에 오신것을 환영합니다.") 
-
+    kw = request.GET.get('kw', '')  # 검색어
     # order_by는 조회 결과를 정렬하는 함수
     # 작성일자 앞에 '-'를 붙여 작성일시를 기준으로 내림차순 정렬함 (최신순이 위로 가도록)
     question_list = Question.objects.order_by('-create_date')
+    if kw:
+        question_list = question_list.filter(
+            Q(subject__icontains=kw) |  # 제목 검색
+            Q(content__icontains=kw) |  # 내용 검색
+            Q(answer__content__icontains=kw) |  # 답변 내용 검색
+            Q(author__username__icontains=kw) |  # 질문 글쓴이 검색
+            Q(answer__author__username__icontains=kw)  # 답변 글쓴이 검색
+        ).distinct()
     # 페이지당 10개씩 보여주기
     paginator = Paginator(question_list, 10)
     # 요청된 페이지 객체 가져오기
     page_obj = paginator.get_page(page)
-    context = {'question_list':page_obj}
+    context = {'question_list':page_obj, 'page': page, 'kw': kw}
     
     # question_list에 정렬된 질문 목록을 context 변수에 저장함
     # context = {'question_list' : question_list}
